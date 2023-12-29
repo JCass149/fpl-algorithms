@@ -60,6 +60,7 @@ def get_enforce_player_ids():
     return enforced_player_ids
 
 
+target_predicted_points = 0
 total_predicted_points = 0
 gw_best_teams = {}
 target_gameweek = live_gameweek + gameweeks_to_plan_for
@@ -93,7 +94,7 @@ for gw in range(live_gameweek, target_gameweek):
 
     gw_best_teams[gw_str] = []  # since max_team isn't "reachable" don't need to consider it
 
-    total_predicted_points += max_team["best_lineup_predicted_points"]
+    target_predicted_points += max_team["best_lineup_predicted_points"]
     print("")
     print("Generating alternative best teams...")
 
@@ -181,4 +182,5 @@ print(
     f'transfers_available: {transfers_available}\n'
     f'best_predicted_points: {best_predicted_points}\n'
     f'avg_predicted_points: {best_predicted_points / gameweeks_to_plan_for}\n'
+    f'target_avg_predicted_points: {target_predicted_points / gameweeks_to_plan_for}\n'
 )
