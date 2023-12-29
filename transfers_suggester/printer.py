@@ -1,11 +1,11 @@
 from constants import POSITIONS
 
 
-def print_best_squad(max_team, gw_str, players_details_per_gameweek):
+def print_players(players, gw_str, players_details_per_gameweek):
     largest_pp = 0
     captain_id = 0
     for pos in POSITIONS:
-        for player_id in max_team[pos]:
+        for player_id in players[pos]:
             pp = players_details_per_gameweek["players_information"][player_id]["predicted_points_per_gameweek"][gw_str]
             if pp > largest_pp:
                 largest_pp = pp
@@ -13,7 +13,7 @@ def print_best_squad(max_team, gw_str, players_details_per_gameweek):
 
     for pos in POSITIONS:
         to_print = []
-        for player_id in max_team[pos]:
+        for player_id in players[pos]:
             player_details = players_details_per_gameweek["players_information"][player_id]
             team = player_details['team']
             name = player_details['name']

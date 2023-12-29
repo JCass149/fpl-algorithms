@@ -3,30 +3,30 @@ import json
 
 from constants import POSITIONS
 from data_importer import get_gameweek, get_data, get_team, get_signing_costs, get_starting_transfers_available
-from lineup_picker import select_best_lineup_from_squad
-from printer import print_best_squad
-from sqaud_navigator import navigate_through_gameweeks
-from squad_generator import generate_best_squad, generate_alternative_teams_from_previous_gameweeks
+from lineup_picker import select_best_lineup_from_team
+from printer import print_players
+from team_navigator import navigate_through_gameweeks
+from team_generator import generate_best_team, generate_teams_from_previous_possible_gameweek_teams
 
-team_id = 4970511
+fpl_id = 4970511
 
-enforce_number_of_players = 6  # larger = faster
-gameweeks_to_plan_for = 4  # smaller = faster
+enforce_number_of_players = 8  # larger = faster
+gameweeks_to_plan_for = 3  # smaller = faster
 players_to_search_per_place = 10
-transfers_available = get_starting_transfers_available(team_id)
+transfers_available = get_starting_transfers_available(fpl_id)
 consider_transfer_hits = 0
 enforce_haaland = True
 enforce_salah = False
 enforce_gks = True
-current_gameweek = get_gameweek()
-current_gameweek_str = "gw_" + str(current_gameweek)
+live_gameweek = get_gameweek()
+live_gameweek_str = "gw_" + str(live_gameweek)
 exclude_player_ids = set()
 
 
 def get_enforce_player_ids():
     player_ids = []
     for pos in POSITIONS:
-        for player_id in starting_squad[pos]:
+        for player_id in starting_team[pos]:
             player_ids.append(player_id)
 
     enforced_player_ids = []
@@ -40,7 +40,7 @@ def get_enforce_player_ids():
         player_ids.remove(308)
 
     if enforce_gks:
-        for gk_id in starting_squad['GK']:
+        for gk_id in starting_team['GK']:
             enforced_player_ids.append(gk_id)
             player_ids.remove(gk_id)
 
@@ -61,56 +61,56 @@ def get_enforce_player_ids():
 
 
 total_predicted_points = 0
-gw_best_squads = {}
-target_gameweek = current_gameweek + gameweeks_to_plan_for
+gw_best_teams = {}
+target_gameweek = live_gameweek + gameweeks_to_plan_for
 
-players_details_per_gameweek = get_data(gameweeks_to_plan_for, current_gameweek)
-starting_squad, starting_squad_value = get_team(team_id, current_gameweek - 1, players_details_per_gameweek)
-print(f'starting_budget: {starting_squad_value}')
+players_details_per_gameweek = get_data(gameweeks_to_plan_for, live_gameweek)
+starting_team, starting_team_value = get_team(fpl_id, live_gameweek - 1, players_details_per_gameweek)
+print(f'starting_budget: {starting_team_value}')
 
 enforce_players_ids = get_enforce_player_ids()
 print(f'enforce_players_ids: {enforce_players_ids}')
 
-signing_costs = get_signing_costs(team_id, starting_squad)
+signing_costs = get_signing_costs(fpl_id, starting_team)
 print(f'signing_costs: {json.dumps(signing_costs)}')
 
-previous_gameweek_str = "gw_" + str(current_gameweek - 1)
-starting_squad["possible_transfers_for_next_week"] = transfers_available
-gw_best_squads[previous_gameweek_str] = [starting_squad]
-print(f'starting_sqaud: {starting_squad}')
+previous_gameweek_str = "gw_" + str(live_gameweek - 1)
+starting_team["possible_transfers_for_next_week"] = transfers_available
+gw_best_teams[previous_gameweek_str] = [starting_team]
+print(f'starting_team: {starting_team}')
 print("")
 
-for gw in range(current_gameweek, target_gameweek):
+for gw in range(live_gameweek, target_gameweek):
     print("GW: " + str(gw))
 
     gw_str = "gw_" + str(gw)
-    max_sqaud, best_lineup = generate_best_squad(gw_str, current_gameweek_str, enforce_players_ids, exclude_player_ids,
-                                                 starting_squad_value, players_to_search_per_place,
+    max_team, best_lineup = generate_best_team(gw_str, live_gameweek_str, enforce_players_ids, exclude_player_ids,
+                                                 starting_team_value, players_to_search_per_place,
                                                  players_details_per_gameweek)
-    print(f'Best lineup: {best_lineup}')
-    print(f'Predicted Points in best lineup: {max_sqaud["best_lineup_predicted_points"]:.2f}')
-    print_best_squad(max_sqaud, gw_str, players_details_per_gameweek)
+    print(f'Best possible lineup given restrictions: {best_lineup}')
+    print(f'Predicted Points in best lineup: {max_team["best_lineup_predicted_points"]:.2f}')
+    print_players(max_team, gw_str, players_details_per_gameweek)
 
-    gw_best_squads[gw_str] = []  # since max_squad isn't "reachable" don't need to consider it
+    gw_best_teams[gw_str] = []  # since max_team isn't "reachable" don't need to consider it
 
-    total_predicted_points += max_sqaud["best_lineup_predicted_points"]
+    total_predicted_points += max_team["best_lineup_predicted_points"]
     print("")
     print("Generating alternative best teams...")
 
-    if current_gameweek == gw:
+    if live_gameweek == gw:
         consider_swaps = transfers_available
     else:
         consider_swaps = 2
 
-    generate_alternative_teams_from_previous_gameweeks(gw_str,
-                                                       current_gameweek_str,
-                                                       players_details_per_gameweek,
-                                                       enforce_players_ids,
-                                                       exclude_player_ids,
-                                                       players_to_search_per_place,
-                                                       gw_best_squads,
-                                                       starting_squad_value,
-                                                       consider_swaps)
+    generate_teams_from_previous_possible_gameweek_teams(gw_str,
+                                                           live_gameweek_str,
+                                                           players_details_per_gameweek,
+                                                           enforce_players_ids,
+                                                           exclude_player_ids,
+                                                           players_to_search_per_place,
+                                                           gw_best_teams,
+                                                           starting_team_value,
+                                                           consider_swaps)
     print("")
 
 print("------------------------")
@@ -129,28 +129,28 @@ def serialize_sets(obj):
     return obj
 
 
-print("gw_best_squads dimensions: ")
-for gw in gw_best_squads:
-    print(f"GW: {gw}, teams for GW: {len(gw_best_squads[gw])}")
+print("gw_best_teams dimensions: ")
+for gw in gw_best_teams:
+    print(f"GW: {gw}, teams for GW: {len(gw_best_teams[gw])}")
 print("")
-print(" ~~~ Finding best route through sqauds ~~~ ")
+print(" ~~~ Finding best route through teams ~~~ ")
 
-gw_changes, remaining_budget, transfers_available, best_predicted_points, best_starting_sqaud = navigate_through_gameweeks(
-    gw_best_squads,
+gw_changes, remaining_budget, transfers_available, best_predicted_points, best_starting_team = navigate_through_gameweeks(
+    gw_best_teams,
     players_details_per_gameweek["players_information"],
     transfers_available,
-    current_gameweek - 1,
-    current_gameweek + gameweeks_to_plan_for - 1,
+    live_gameweek - 1,
+    live_gameweek + gameweeks_to_plan_for - 1,
     consider_transfer_hits
 )
 
-print(f'starting_sqaud: {starting_squad}')
-current_gameweek_str = "gw_" + str(current_gameweek)
-print_best_squad(best_starting_sqaud, current_gameweek_str, players_details_per_gameweek)
+print(f'starting_team: {starting_team}')
+live_gameweek_str = "gw_" + str(live_gameweek)
+print_players(best_starting_team, live_gameweek_str, players_details_per_gameweek)
 
 print("")
 print("gw_changes: ")
-current_squad = copy.deepcopy(best_starting_sqaud)
+current_team = copy.deepcopy(best_starting_team)
 
 for gw in gw_changes:
     print(gw)
@@ -164,15 +164,16 @@ for gw in gw_changes:
             pp = player_details['predicted_points_per_gameweek'][gw]
             print(f'({name}, {team}, £{cost}, {pp:.2f})')
             if transfer_direction == "transfers_out":
-                current_squad[player_details['position']].remove(player)
+                current_team[player_details['position']].remove(player)
             else:
-                current_squad[player_details['position']].append(player)
+                current_team[player_details['position']].append(player)
         print("")
+
     print("Best GW lineup: ")
     player_info = players_details_per_gameweek["players_information"]
-    best_lineup, best_score = select_best_lineup_from_squad(current_squad, player_info, gw)
+    best_lineup, best_score = select_best_lineup_from_team(current_team, player_info, gw)
     print(f'best_lineup: {best_lineup}, best_score: {best_score}')
-    print_best_squad(best_lineup, gw, players_details_per_gameweek)
+    print_players(best_lineup, gw, players_details_per_gameweek)
     print("")
 
 print(
