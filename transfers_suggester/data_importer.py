@@ -6,8 +6,8 @@ import requests
 from constants import POSITIONS
 
 
-def get_starting_transfers_available(team_id):
-    r = requests.get(f'https://fantasy.premierleague.com/api/entry/{team_id}/history/').json()
+def get_starting_transfers_available(fpl_id):
+    r = requests.get(f'https://fantasy.premierleague.com/api/entry/{fpl_id}/history/').json()
 
     wildcards = set()
     for chip in r['chips']:
@@ -42,10 +42,10 @@ def get_gameweek():
     raise Exception("Couldn't get current gameweek")
 
 
-def get_team(team_id, previous_gw, players_details_per_gameweek):
-    r = requests.get(f'https://fantasy.premierleague.com/api/entry/{team_id}/event/{previous_gw}/picks/').json()
+def get_team(fpl_id, previous_gw, players_details_per_gameweek):
+    r = requests.get(f'https://fantasy.premierleague.com/api/entry/{fpl_id}/event/{previous_gw}/picks/').json()
 
-    starting_squad = {
+    starting_team = {
         'GK': [],
         'DEF': [],
         'MID': [],
@@ -56,17 +56,17 @@ def get_team(team_id, previous_gw, players_details_per_gameweek):
     for player in r['picks']:
         player_id = player['element']
         player_pos = players_details_per_gameweek['players_information'][player_id]['position']
-        starting_squad[player_pos].append(player_id)
+        starting_team[player_pos].append(player_id)
 
-    squad_value = cost_to_float(r['entry_history']['value'])
+    team_value = cost_to_float(r['entry_history']['value'])
 
-    print(f'starting_squad: {starting_squad}')
-    return starting_squad, squad_value
+    print(f'starting_team: {starting_team}')
+    return starting_team, team_value
 
 
-def get_signing_costs(team_id, squad):
+def get_signing_costs(fpl_id, team):
     """
-    Stores the value that each player in the squad was bought for.
+    Stores the value that each player in the team was bought for.
 
     .. code-block:: text
         {
@@ -78,18 +78,18 @@ def get_signing_costs(team_id, squad):
         }
     ::
     """
-    r = requests.get(f'https://fantasy.premierleague.com/api/entry/{team_id}/transfers/').json()
+    r = requests.get(f'https://fantasy.premierleague.com/api/entry/{fpl_id}/transfers/').json()
     signing_costs = {}
     for transfer in reversed(r):
-        in_squad = False
+        in_team = False
         for pos in POSITIONS:
-            for player_id in squad[pos]:
+            for player_id in team[pos]:
                 if player_id == transfer['element_in']:
-                    in_squad = True
+                    in_team = True
                     break
-            if in_squad:
+            if in_team:
                 break
-        if not in_squad:
+        if not in_team:
             continue
         purchased_for = cost_to_float(transfer['element_in_cost'])
         signing_costs[transfer['element_in']] = {
@@ -98,7 +98,7 @@ def get_signing_costs(team_id, squad):
 
     r = requests.get('https://fantasy.premierleague.com/api/bootstrap-static/').json()
     for pos in POSITIONS:
-        for player_id in squad[pos]:
+        for player_id in team[pos]:
             for player in r['elements']:
                 if player['id'] == player_id:
                     cost_now = cost_to_float(player['now_cost'])
@@ -124,7 +124,7 @@ def get_sell_cost(cost_now, purchase_cost):
     return round(sell_cost, 1)
 
 
-def get_data(gameweeks_to_plan_for, current_gameweek):
+def get_data(gameweeks_to_plan_for, live_gameweek):
     """
     Each gameweek stores the id and predicted points of each player ordered descending by predicted points.
 
@@ -182,9 +182,9 @@ def get_data(gameweeks_to_plan_for, current_gameweek):
     ::
     """
 
-    target_gameweek = get_target_gameweek(current_gameweek, gameweeks_to_plan_for)
+    target_gameweek = get_target_gameweek(live_gameweek, gameweeks_to_plan_for)
 
-    df, target_gameweek = get_fpl_form_data(current_gameweek, target_gameweek)
+    df, target_gameweek = get_fpl_form_data(live_gameweek, target_gameweek)
 
     players_details_per_gameweek = {
         "players_information": {}
@@ -199,7 +199,7 @@ def get_data(gameweeks_to_plan_for, current_gameweek):
             "predicted_points_per_gameweek": {}
         }
 
-    for gw in range(current_gameweek, target_gameweek + 1):
+    for gw in range(live_gameweek, target_gameweek + 1):
         performers = df.sort_values(str(gw) + '_pts', ascending=False)
 
         gw_str = "gw_" + str(gw)
@@ -217,17 +217,17 @@ def get_data(gameweeks_to_plan_for, current_gameweek):
     return players_details_per_gameweek
 
 
-def get_target_gameweek(current_gameweek, gameweeks_to_plan_for):
-    return min(int(current_gameweek) + gameweeks_to_plan_for - 1, 38)
+def get_target_gameweek(live_gameweek, gameweeks_to_plan_for):
+    return min(int(live_gameweek) + gameweeks_to_plan_for - 1, 38)
 
 
-def get_fpl_form_data(current_gameweek, target_gameweek):
+def get_fpl_form_data(live_gameweek, target_gameweek):
     url = 'https://fplform.com/export-fpl-form-data.php'
     headers = {
         'content-type': 'application/x-www-form-urlencoded'
     }
     data = {
-        'firstgw': str(current_gameweek),
+        'firstgw': str(live_gameweek),
         'lastgw': str(target_gameweek)
     }
     r = requests.post(url, data, headers=headers)

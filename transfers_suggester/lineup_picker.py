@@ -1,7 +1,7 @@
 from constants import POSITIONS, FORMATIONS
 
 
-def select_best_lineup_from_squad(team, players_information, gw_str):
+def select_best_lineup_from_team(team, players_information, gw_str):
     order_team_by_predicted_points(team, players_information, gw_str)
 
     best_score = 0
@@ -41,11 +41,11 @@ def order_team_by_predicted_points(team, players_information, gw_str):
         team[position] = player_ids_ordered_by_predicted_points
 
 
-def captain_bonus(team, players_information, gw_str):
+def captain_bonus(lineup, players_information, gw_str):
     largest_pp = 0
     captain_id = 0
     for pos in POSITIONS:
-        best_player_for_position = team[pos][0]
+        best_player_for_position = lineup[pos][0]
         pp = players_information[best_player_for_position]["predicted_points_per_gameweek"][gw_str]
         if pp > largest_pp:
             largest_pp = pp
