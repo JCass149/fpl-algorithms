@@ -10,14 +10,14 @@ from team_generator import generate_best_team, generate_teams_from_previous_poss
 
 fpl_id = 4970511
 
-enforce_number_of_players = 8  # larger = faster
-gameweeks_to_plan_for = 3  # smaller = faster
+enforce_number_of_players = 7  # larger = faster
+gameweeks_to_plan_for = 4  # smaller = faster
 players_to_search_per_place = 10
 transfers_available = get_starting_transfers_available(fpl_id)
 consider_transfer_hits = 0
-enforce_haaland = True
+enforce_haaland = False
 enforce_salah = False
-enforce_gks = True
+enforce_gks = False
 live_gameweek = get_gameweek()
 live_gameweek_str = "gw_" + str(live_gameweek)
 exclude_player_ids = set()
