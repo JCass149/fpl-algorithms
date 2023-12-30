@@ -1,6 +1,8 @@
 import copy
 import itertools
 
+from tqdm import tqdm
+
 from constants import POSITIONS, PLACES_PER_POSITION, TOTAL_PLACES
 from lineup_picker import select_best_lineup_from_team
 
@@ -159,7 +161,9 @@ def generate_teams_from_previous_possible_gameweek_teams(
 ):
     # consider swapping 0, 1, or 2 players from each possible previous gameweek
     previous_gw_str = "gw_" + str(int(gw_str[3:]) - 1)
-    for previous_gameweek_possible_team in gw_best_teams[previous_gw_str]:
+
+    # tqdm() just prints a progress bar
+    for previous_gameweek_possible_team in tqdm(gw_best_teams[previous_gw_str]):
         non_enforced_or_excluded_players_in_team = []
         players_in_team = set()
         for pos in POSITIONS:

@@ -1,7 +1,5 @@
 import copy
 
-from tqdm import tqdm
-
 from constants import POSITIONS
 
 
@@ -69,8 +67,7 @@ def navigate_through_gameweeks(gw_best_teams, player_details, transfers_availabl
                 next_week_transfers_available(transfers_available, transfers_in)
             )
 
-    # tqdm() just prints a progress bar
-    for starting_team in tqdm(gw_best_teams["gw_" + str(starting_gw)]):
+    for starting_team in gw_best_teams["gw_" + str(starting_gw)]:
         starting_budget = starting_team["starting_budget"]
         print("Testing starting from team: " + str(starting_team))
         traverse(starting_gw, starting_team, starting_budget, starting_team["best_lineup_predicted_points"],
