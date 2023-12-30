@@ -5,8 +5,8 @@ from constants import POSITIONS
 from data_importer import get_gameweek, get_data, get_team, get_signing_costs, get_starting_transfers_available
 from lineup_picker import select_best_lineup_from_team
 from printer import print_players
-from team_navigator import navigate_through_gameweeks
 from team_generator import generate_best_team, generate_teams_from_previous_possible_gameweek_teams
+from team_navigator import navigate_through_gameweeks
 
 fpl_id = 4970511
 
@@ -86,8 +86,8 @@ for gw in range(live_gameweek, target_gameweek):
 
     gw_str = "gw_" + str(gw)
     max_team, best_lineup = generate_best_team(gw_str, live_gameweek_str, enforce_players_ids, exclude_player_ids,
-                                                 starting_team_value, players_to_search_per_place,
-                                                 players_details_per_gameweek)
+                                               starting_team_value, players_to_search_per_place,
+                                               players_details_per_gameweek)
     print(f'Best possible lineup given restrictions: {best_lineup}')
     print(f'Predicted Points in best lineup: {max_team["best_lineup_predicted_points"]:.2f}')
     print_players(max_team, gw_str, players_details_per_gameweek)
@@ -104,14 +104,14 @@ for gw in range(live_gameweek, target_gameweek):
         consider_swaps = 2
 
     generate_teams_from_previous_possible_gameweek_teams(gw_str,
-                                                           live_gameweek_str,
-                                                           players_details_per_gameweek,
-                                                           enforce_players_ids,
-                                                           exclude_player_ids,
-                                                           players_to_search_per_place,
-                                                           gw_best_teams,
-                                                           starting_team_value,
-                                                           consider_swaps)
+                                                         live_gameweek_str,
+                                                         players_details_per_gameweek,
+                                                         enforce_players_ids,
+                                                         exclude_player_ids,
+                                                         players_to_search_per_place,
+                                                         gw_best_teams,
+                                                         starting_team_value,
+                                                         consider_swaps)
     print("")
 
 print("------------------------")

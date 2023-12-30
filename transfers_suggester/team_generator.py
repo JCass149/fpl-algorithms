@@ -25,7 +25,7 @@ def generate_best_team(
     }
 
     enforced_players_count, budget_remaining = apply_enforced_players(enforce_player_ids, team, budget,
-                                                                              players_details_per_gameweek)
+                                                                      players_details_per_gameweek)
 
     player_pool_to_consider = get_player_pool(enforce_player_ids, exclude_player_ids, team, gw_str,
                                               players_to_search_per_place, players_details_per_gameweek)
@@ -182,8 +182,8 @@ def generate_teams_from_previous_possible_gameweek_teams(
                 players_to_enforce = players_in_team.copy()
                 players_to_enforce.difference_update(set(combination))
                 max_team, _ = generate_best_team(gw_str, live_gameweek_str, players_to_enforce, exclude_player_ids,
-                                                  team_value, players_to_search_per_place,
-                                                  players_details_per_gameweek)
+                                                 team_value, players_to_search_per_place,
+                                                 players_details_per_gameweek)
 
                 if not complete_team(max_team):
                     # print(f"Generated garbage team from enforcing players: \n"
