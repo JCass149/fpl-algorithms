@@ -60,7 +60,6 @@ def get_team(fpl_id, previous_gw, players_details_per_gameweek):
 
     team_value = cost_to_float(r['entry_history']['value'])
 
-    print(f'starting_team: {starting_team}')
     return starting_team, team_value
 
 

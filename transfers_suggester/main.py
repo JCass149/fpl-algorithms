@@ -4,7 +4,7 @@ import json
 from constants import POSITIONS
 from data_importer import get_gameweek, get_data, get_team, get_signing_costs, get_starting_transfers_available
 from lineup_picker import select_best_lineup_from_team
-from printer import print_players
+from printer import print_players, print_player_names
 from team_generator import generate_best_team, generate_teams_from_previous_possible_gameweek_teams
 from team_navigator import navigate_through_gameweeks
 
@@ -67,13 +67,14 @@ target_gameweek = live_gameweek + gameweeks_to_plan_for
 
 players_details_per_gameweek = get_data(gameweeks_to_plan_for, live_gameweek)
 starting_team, starting_team_value = get_team(fpl_id, live_gameweek - 1, players_details_per_gameweek)
-print(f'starting_budget: {starting_team_value}')
+print(f'Starting budget: {starting_team_value}')
 
 enforce_players_ids = get_enforce_player_ids()
-print(f'enforce_players_ids: {enforce_players_ids}')
+print(f'Enforced players: ', end='')
+print_player_names(enforce_players_ids, players_details_per_gameweek)
 
 signing_costs = get_signing_costs(fpl_id, starting_team)
-print(f'signing_costs: {json.dumps(signing_costs)}')
+print(f'Signing costs: {json.dumps(signing_costs)}')
 
 previous_gameweek_str = "gw_" + str(live_gameweek - 1)
 starting_team["possible_transfers_for_next_week"] = transfers_available
@@ -118,10 +119,6 @@ print("------------------------")
 print("")
 print("")
 
-print("Total Predicted Points in next " + str(gameweeks_to_plan_for) + " gameweeks: " + f'{total_predicted_points:.2f}')
-print("Average Predicted Points per gameweek over next " + str(
-    gameweeks_to_plan_for) + " gameweeks: " + f'{total_predicted_points / gameweeks_to_plan_for:.2f}')
-
 
 def serialize_sets(obj):
     if isinstance(obj, set):
@@ -146,7 +143,6 @@ gw_changes, remaining_budget, transfers_available, best_predicted_points, best_s
 )
 
 print(f'starting_team: {starting_team}')
-live_gameweek_str = "gw_" + str(live_gameweek)
 print_players(best_starting_team, live_gameweek_str, players_details_per_gameweek)
 
 print("")
@@ -178,9 +174,9 @@ for gw in gw_changes:
     print("")
 
 print(
-    f'remaining_budget: {round(remaining_budget, 1)}\n'
-    f'transfers_available: {transfers_available}\n'
-    f'best_predicted_points: {best_predicted_points}\n'
-    f'avg_predicted_points: {best_predicted_points / gameweeks_to_plan_for}\n'
+    f'Remaining budget: {round(remaining_budget, 1)}\n'
+    f'Transfers remaining: {transfers_available}\n'
+    f'Total Predicted Points in next {gameweeks_to_plan_for} gameweeks: {best_predicted_points}\n'
+    f'Average Predicted Points per gameweek over next {gameweeks_to_plan_for} gameweeks: {best_predicted_points / gameweeks_to_plan_for}\n'
     f'target_avg_predicted_points: {target_predicted_points / gameweeks_to_plan_for}\n'
 )

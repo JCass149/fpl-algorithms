@@ -35,5 +35,5 @@ def print_player_names(player_ids, players_details_per_gameweek):
     players = set()
     for player_id in player_ids:
         player_details = players_details_per_gameweek["players_information"][player_id]
-        players.add((player_id, player_details["name"]))
+        players.add((player_id, player_details["name"], "£" + str(player_details["cost"]), player_details["team"]))
     print(players)
