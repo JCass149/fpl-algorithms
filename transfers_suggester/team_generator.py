@@ -7,6 +7,7 @@ from constants import POSITIONS, PLACES_PER_POSITION, TOTAL_PLACES
 from lineup_picker import select_best_lineup_from_team
 
 
+# Bounded-knapsack algorithm originally by James Cockbain: https://github.com/jcockbain/fpl-algorithms
 def generate_best_team(
         gw_str,
         live_gameweek_str,
