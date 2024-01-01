@@ -10,9 +10,10 @@ from team_navigator import navigate_through_gameweeks
 
 fpl_id = 4970511
 
-enforce_number_of_players = 7  # larger = faster
+enforce_number_of_players = 4  # larger = faster
 gameweeks_to_plan_for = 4  # smaller = faster
 players_to_search_per_place = 10
+transfer_predicted_points_gained_threshold = 0.2  # larger = faster
 transfers_available = get_starting_transfers_available(fpl_id)
 consider_transfer_hits = 0
 enforce_haaland = False
@@ -112,6 +113,7 @@ for gw in range(live_gameweek, target_gameweek):
                                                          players_to_search_per_place,
                                                          gw_best_teams,
                                                          starting_team_value,
+                                                         transfer_predicted_points_gained_threshold,
                                                          consider_swaps)
     print("")
 

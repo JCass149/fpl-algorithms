@@ -157,9 +157,9 @@ def generate_teams_from_previous_possible_gameweek_teams(
         players_to_search_per_place,
         gw_best_teams,
         team_value,
+        transfer_predicted_points_gained_threshold,
         consider_swaps=2
 ):
-    # consider swapping 0, 1, or 2 players from each possible previous gameweek
     previous_gw_str = "gw_" + str(int(gw_str[3:]) - 1)
 
     # tqdm() just prints a progress bar
@@ -176,6 +176,7 @@ def generate_teams_from_previous_possible_gameweek_teams(
         if "possible_transfers_for_next_week" in previous_gameweek_possible_team:
             consider_swaps = previous_gameweek_possible_team["possible_transfers_for_next_week"]
 
+        no_changes_predicted_points = 0
         for number_of_players_to_not_keep in range(0, consider_swaps + 1):
             for combination in itertools.combinations(non_enforced_or_excluded_players_in_team,
                                                       number_of_players_to_not_keep):
@@ -184,6 +185,13 @@ def generate_teams_from_previous_possible_gameweek_teams(
                 max_team, _ = generate_best_team(gw_str, live_gameweek_str, players_to_enforce, exclude_player_ids,
                                                  team_value, players_to_search_per_place,
                                                  players_details_per_gameweek)
+
+                if number_of_players_to_not_keep == 0:
+                    no_changes_predicted_points = max_team["best_lineup_predicted_points"]
+                else:
+                    predicted_points_difference = max_team["best_lineup_predicted_points"] - no_changes_predicted_points
+                    if predicted_points_difference < transfer_predicted_points_gained_threshold:
+                        continue
 
                 if not complete_team(max_team):
                     # print(f"Generated garbage team from enforcing players: \n"
