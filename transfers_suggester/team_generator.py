@@ -28,6 +28,8 @@ def generate_best_team(
     enforced_players_count, budget_remaining = apply_enforced_players(enforce_player_ids, team, budget,
                                                                       players_details_per_gameweek)
 
+    players_per_team = count_players_per_team(team, players_details_per_gameweek)
+
     player_pool_to_consider = get_player_pool(enforce_player_ids, exclude_player_ids, team, gw_str,
                                               players_to_search_per_place, players_details_per_gameweek)
 
@@ -58,16 +60,20 @@ def generate_best_team(
         position = player_details['position']
 
         players_in_current_position = team[position]
-        if len(players_in_current_position) < PLACES_PER_POSITION[position]:
+        players_team = player_details['team']
+        if (len(players_in_current_position) < PLACES_PER_POSITION[position] and
+                not is_players_per_team_limit_reached(players_team, players_per_team)):
             cost = player_details['cost']
 
             players_in_current_position.append(player_id)
+            increment_players_per_team(players_team, players_per_team)
             build_best_team(
                 budget - cost,
                 nth_best_performer + 1,
                 total_players_in_team + 1
             )
             players_in_current_position.pop()
+            decrement_players_per_team(players_team, players_per_team)
 
         build_best_team(budget, nth_best_performer + 1, total_players_in_team)
 
@@ -85,6 +91,41 @@ def generate_best_team(
         max_team["starting_budget"] = round(budget_remaining, 1)
 
     return max_team, max_lineup
+
+
+def increment_players_per_team(team, players_per_team):
+    if team not in players_per_team:
+        players_per_team[team] = 1
+    else:
+        players_per_team[team] += 1
+
+
+def decrement_players_per_team(team, players_per_team):
+    if (team not in players_per_team) or (players_per_team[team] == 0):
+        raise Exception("Can't decrement players per team")
+    elif players_per_team[team] == 1:
+        players_per_team.pop(team)
+    else:
+        players_per_team[team] -= 1
+
+
+def is_players_per_team_limit_reached(team, players_per_team):
+    if team not in players_per_team:
+        return False
+    if players_per_team[team] >= 3:
+        return True
+
+    return False
+
+
+def count_players_per_team(team, players_details_per_gameweek):
+    players_per_team = {}
+    for pos in POSITIONS:
+        if pos in team:
+            for player_id in team[pos]:
+                players_team = players_details_per_gameweek['players_information'][player_id]['team']
+                increment_players_per_team(players_team, players_per_team)
+    return players_per_team
 
 
 def get_best_player_pp(lineup, gw_str, players_details_per_gameweek):
