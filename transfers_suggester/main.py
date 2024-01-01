@@ -22,6 +22,14 @@ players_to_search_per_place = 10
 transfer_predicted_points_gained_threshold = 0.2
 'Larger = faster. The minimum predicted points gained required to consider making a transfer'
 
+enforce_enabler_values = {
+    "GK": 4.0,
+    "DEF": 4.0,
+    "MID": 4.3,
+    "FWD": 4.5
+}
+'Any players worth less than or equal to these values will be enforced'
+
 transfers_available = get_starting_transfers_available(fpl_id)
 consider_transfer_hits = 0
 enforce_haaland = False
@@ -34,11 +42,15 @@ exclude_player_ids = set()
 
 def get_enforce_player_ids():
     player_ids = []
+    enforced_player_ids = []
+
     for pos in POSITIONS:
         for player_id in starting_team[pos]:
-            player_ids.append(player_id)
-
-    enforced_player_ids = []
+            player_cost = players_details_per_gameweek['players_information'][player_id]['cost']
+            if player_cost <= enforce_enabler_values[pos]:
+                enforced_player_ids.append(player_id)
+            else:
+                player_ids.append(player_id)
 
     if enforce_haaland:
         enforced_player_ids.append(355)
