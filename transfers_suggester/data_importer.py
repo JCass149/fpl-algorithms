@@ -51,14 +51,14 @@ def get_team(fpl_id, previous_gw, players_details_per_gameweek):
         'MID': [],
         'FWD': [],
         'best_lineup_predicted_points': 0,
-        'starting_budget': cost_to_float(r['entry_history']['bank'])
+        'starting_budget': int(r['entry_history']['bank'])
     }
     for player in r['picks']:
         player_id = player['element']
         player_pos = players_details_per_gameweek['players_information'][player_id]['position']
         starting_team[player_pos].append(player_id)
 
-    team_value = cost_to_float(r['entry_history']['value'])
+    team_value = int(r['entry_history']['value'])
 
     return starting_team, team_value
 
@@ -90,7 +90,7 @@ def get_signing_costs(fpl_id, team):
                 break
         if not in_team:
             continue
-        purchased_for = cost_to_float(transfer['element_in_cost'])
+        purchased_for = int(transfer['element_in_cost'])
         signing_costs[transfer['element_in']] = {
             'purchased_for': purchased_for
         }
@@ -100,12 +100,12 @@ def get_signing_costs(fpl_id, team):
         for player_id in team[pos]:
             for player in r['elements']:
                 if player['id'] == player_id:
-                    cost_now = cost_to_float(player['now_cost'])
+                    cost_now = int(player['now_cost'])
                     if player_id in signing_costs:
                         sell_cost = get_sell_cost(cost_now, signing_costs[player_id]['purchased_for'])
                         signing_costs[player_id]['sell_for'] = sell_cost
                     else:
-                        starting_cost = cost_to_float(player['now_cost'] - player['cost_change_start'])
+                        starting_cost = int(player['now_cost'] - player['cost_change_start'])
                         cost_details = {
                             'purchased_for': starting_cost,
                             'sell_for': get_sell_cost(cost_now, starting_cost),
@@ -119,8 +119,7 @@ def get_signing_costs(fpl_id, team):
 def get_sell_cost(cost_now, purchase_cost):
     if cost_now < purchase_cost:
         return cost_now
-    sell_cost = purchase_cost + round((cost_now - purchase_cost) / 2, 1)
-    return round(sell_cost, 1)
+    return purchase_cost + ((cost_now - purchase_cost) // 2)
 
 
 def get_data(gameweeks_to_plan_for, live_gameweek):
@@ -154,7 +153,7 @@ def get_data(gameweeks_to_plan_for, live_gameweek):
           ],
           "players_information": {
             308: {
-              "cost": 12.6,
+              "cost": 126,
               "name": "Salah",
               "position": "MID",
               "team": "LIV",
@@ -165,7 +164,7 @@ def get_data(gameweeks_to_plan_for, live_gameweek):
               }
             },
             355: {
-              "cost": 14.1,
+              "cost": 141,
               "name": "Haaland",
               "position": "FWD",
               "team": "MCI",
@@ -191,7 +190,7 @@ def get_data(gameweeks_to_plan_for, live_gameweek):
 
     for index, performer in df.iterrows():
         players_details_per_gameweek["players_information"][performer['ID']] = {
-            "cost": performer['Price'],
+            "cost": int(performer['Price'] * 10),
             "name": performer['Name'],
             "position": performer['Pos'],
             "team": performer['Team'],
@@ -236,7 +235,3 @@ def get_fpl_form_data(live_gameweek, target_gameweek):
     csv_string_io = StringIO(r.text)
     df = pd.read_csv(csv_string_io)
     return df, target_gameweek
-
-
-def cost_to_float(cost):
-    return round(float(cost) / 10, 1)

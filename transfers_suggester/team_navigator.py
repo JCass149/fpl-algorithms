@@ -98,7 +98,7 @@ def navigate_between_teams(player_details, source_team, target_team, target_team
 
     transfers_in = set()
     transfers_out = set()
-    transfers_cost = 0.0
+    transfers_cost = 0
 
     for pos in POSITIONS:
         transfers_out.update(set(source_team[pos]) - set(target_team[pos]))
@@ -112,10 +112,9 @@ def navigate_between_teams(player_details, source_team, target_team, target_team
     for player in transfers_in:
         transfers_cost += player_details[player]['cost']
 
-    cost = round(transfers_cost, 1)
-    cache_target_weeks(cost, source_team, target_team_idx, transfers_in, transfers_out)
+    cache_target_weeks(transfers_cost, source_team, target_team_idx, transfers_in, transfers_out)
 
-    return cost, transfers_in, transfers_out
+    return transfers_cost, transfers_in, transfers_out
 
 
 def cache_target_weeks(cost, source_team, target_team_idx, transfers_in, transfers_out):

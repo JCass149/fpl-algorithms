@@ -4,7 +4,7 @@ import json
 from constants import POSITIONS
 from data_importer import get_gameweek, get_data, get_team, get_signing_costs, get_starting_transfers_available
 from lineup_picker import select_best_lineup_from_team
-from printer import print_players, print_player_names
+from printer import print_players, print_player_name, print_player_names, print_output
 from team_generator import generate_best_team, generate_teams_from_previous_possible_gameweek_teams
 from team_navigator import navigate_through_gameweeks
 
@@ -23,10 +23,10 @@ transfer_predicted_points_gained_threshold = 0.2
 'Larger = faster. The minimum predicted points gained required to consider making a transfer'
 
 enforce_enabler_values = {
-    "GK": 4.0,
-    "DEF": 4.0,
-    "MID": 4.3,
-    "FWD": 4.5
+    "GK": 40,
+    "DEF": 40,
+    "MID": 43,
+    "FWD": 45
 }
 'Any players worth less than or equal to these values will be enforced'
 
@@ -176,16 +176,13 @@ for gw in gw_changes:
     for transfer_direction in gw_changes[gw]:
         print(transfer_direction)
         for player in gw_changes[gw][transfer_direction]:
-            player_details = players_details_per_gameweek["players_information"][player]
-            team = player_details['team']
-            name = player_details['name']
-            cost = player_details['cost']
-            pp = player_details['predicted_points_per_gameweek'][gw]
-            print(f'({name}, {team}, £{cost}, {pp:.2f})')
+            print_player_name(player, players_details_per_gameweek, gw)
+
+            player_position = players_details_per_gameweek["players_information"][player]['position']
             if transfer_direction == "transfers_out":
-                current_team[player_details['position']].remove(player)
+                current_team[player_position].remove(player)
             else:
-                current_team[player_details['position']].append(player)
+                current_team[player_position].append(player)
         print("")
 
     print("Best GW lineup: ")
@@ -195,10 +192,5 @@ for gw in gw_changes:
     print_players(best_lineup, gw, players_details_per_gameweek)
     print("")
 
-print(
-    f'Remaining budget: {round(remaining_budget, 1)}\n'
-    f'Transfers remaining: {transfers_available}\n'
-    f'Total Predicted Points in next {gameweeks_to_plan_for} gameweeks: {best_predicted_points}\n'
-    f'Average Predicted Points per gameweek over next {gameweeks_to_plan_for} gameweeks: {best_predicted_points / gameweeks_to_plan_for}\n'
-    f'target_avg_predicted_points: {target_predicted_points / gameweeks_to_plan_for}\n'
-)
+print_output(remaining_budget, transfers_available, gameweeks_to_plan_for, best_predicted_points,
+             target_predicted_points)
