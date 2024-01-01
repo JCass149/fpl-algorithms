@@ -10,10 +10,18 @@ from team_navigator import navigate_through_gameweeks
 
 fpl_id = 4970511
 
-enforce_number_of_players = 4  # larger = faster
-gameweeks_to_plan_for = 4  # smaller = faster
+enforce_number_of_players = 4
+'Larger = faster. The minimum number of players to enforce keeping throughout future gameweeks'
+
+gameweeks_to_plan_for = 4
+'Smaller = faster. The number of gameweeks to produce a transfer plan for'
+
 players_to_search_per_place = 10
-transfer_predicted_points_gained_threshold = 0.2  # larger = faster
+'Smaller = faster. The numbers of players to consider transferring in'
+
+transfer_predicted_points_gained_threshold = 0.2
+'Larger = faster. The minimum predicted points gained required to consider making a transfer'
+
 transfers_available = get_starting_transfers_available(fpl_id)
 consider_transfer_hits = 0
 enforce_haaland = False
