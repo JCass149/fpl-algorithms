@@ -31,7 +31,8 @@ def generate_best_team(
     players_per_team = count_players_per_team(team, players_details_per_gameweek)
 
     player_pool_to_consider = get_player_pool(enforce_player_ids, exclude_player_ids, team, gw_str,
-                                              players_to_search_per_place, players_details_per_gameweek)
+                                              players_to_search_per_place, players_details_per_gameweek,
+                                              budget_remaining)
 
     def build_best_team(budget, nth_best_performer, total_players_in_team):
         nonlocal max_team
@@ -139,7 +140,14 @@ def get_best_player_pp(lineup, gw_str, players_details_per_gameweek):
 
 
 def get_player_pool(enforce_player_ids, exclude_player_ids, team, gw_str, players_to_search_per_place,
-                    players_details_per_gameweek):
+                    players_details_per_gameweek, budget_remaining):
+    if len(enforce_player_ids) == TOTAL_PLACES:
+        return []
+
+    if len(enforce_player_ids) == TOTAL_PLACES - 1:
+        return find_single_player(team, players_details_per_gameweek, gw_str, exclude_player_ids, enforce_player_ids,
+                                  budget_remaining)
+
     places_remaining = copy.deepcopy(PLACES_PER_POSITION)
     for pos in POSITIONS:
         places_remaining[pos] = (places_remaining[pos] - len(team[pos])) * players_to_search_per_place
@@ -160,6 +168,32 @@ def get_player_pool(enforce_player_ids, exclude_player_ids, team, gw_str, player
             places_remaining[player_pos] = places_remaining[player_pos] - 1
 
     return player_pool
+
+
+def find_single_player(team, players_details_per_gameweek, gw_str, exclude_player_ids, enforce_player_ids,
+                       budget_remaining):
+    position_remaining = ""
+    for pos in POSITIONS:
+        if len(team[pos]) < PLACES_PER_POSITION[pos]:
+            position_remaining = pos
+            break
+
+    for player in players_details_per_gameweek[gw_str]:
+        player_id = player["id"]
+
+        if player_id in exclude_player_ids or player_id in enforce_player_ids:
+            continue
+
+        player_details = players_details_per_gameweek["players_information"][player_id]
+        player_pos = player_details["position"]
+        if player_pos != position_remaining:
+            continue
+
+        player_cost = player_details["cost"]
+        if player_cost > budget_remaining:
+            continue
+
+        return [player_id]
 
 
 def are_places_remaining(places_remaining):
