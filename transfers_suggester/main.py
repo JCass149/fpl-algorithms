@@ -22,7 +22,7 @@ players_to_search_per_place = 10
 transfer_predicted_points_gained_threshold = 0.2
 'Larger = faster. The minimum predicted points gained required to consider making a transfer'
 
-enforce_enabler_values = {
+enforce_enabler_value_thresholds = {
     "GK": 40,
     "DEF": 40,
     "MID": 43,
@@ -47,7 +47,7 @@ def get_enforce_player_ids():
     for pos in POSITIONS:
         for player_id in starting_team[pos]:
             player_cost = players_details_per_gameweek['players_information'][player_id]['cost']
-            if player_cost <= enforce_enabler_values[pos]:
+            if player_cost <= enforce_enabler_value_thresholds[pos]:
                 enforced_player_ids.append(player_id)
             else:
                 player_ids.append(player_id)
